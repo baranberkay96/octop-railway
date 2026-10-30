@@ -1,0 +1,194 @@
+{
+  "name": "Octop v1 Multi-User AI Assistant",
+  "description": "Self-hosted multi-agent AI assistant for teams, with chat apps and tools.",
+  "category": "AI/ML",
+  "tags": [
+    "octop",
+    "ai-agent",
+    "multi-agent",
+    "team-assistant",
+    "feishu",
+    "dingtalk",
+    "wecom",
+    "telegram",
+    "discord",
+    "mcp",
+    "postgres"
+  ],
+  "image": "https://cdn.jsdelivr.net/gh/TencentCloud/Octop@v1.0.3b1/docs/assets/octop-logo.svg",
+  "upstream": {
+    "repo": "TencentCloud/Octop",
+    "version": "v1.0.3b1",
+    "commit": "890111b7879665840414ca28ab168b05b0db0921",
+    "released": "2026-10-25",
+    "image": "ghcr.io/tencentcloud/octop:1.0.3b1@sha256:2ac082ea72efa8497d67dcf5c2421b90ddbc0e8735fc91e49fdc77f2dd89af47",
+    "checked": "2026-10-30"
+  },
+  "services": {
+    "Octop": {
+      "icon": "https://cdn.jsdelivr.net/gh/TencentCloud/Octop@v1.0.3b1/docs/assets/octop-logo.svg",
+      "source": {
+        "repo": "baranberkay96/octop-railway",
+        "rootDirectory": "/services/octop"
+      },
+      "startCommand": null,
+      "preDeployCommand": null,
+      "healthcheckPath": "/api/health",
+      "healthcheckTimeout": 900,
+      "restartPolicyType": "ALWAYS",
+      "numReplicas": 1,
+      "cronSchedule": null,
+      "publicDomain": true,
+      "targetPort": 8088,
+      "tcpProxy": null,
+      "volume": {
+        "mountPath": "/data"
+      },
+      "variables": {
+        "PORT": {
+          "defaultValue": "8088",
+          "description": "Port of the Octop dashboard and API. Railway's healthcheck and the public domain use it; keep 8088 unless you also change the domain's target port.",
+          "required": false
+        },
+        "OCTOP_ADMIN_USERNAME": {
+          "defaultValue": "admin-${{secret(8, \"abcdefghijkmnpqrstuvwxyz23456789\")}}",
+          "description": "Login name of the first admin, created before the dashboard opens. Random on purpose: five wrong passwords lock a username for 15 minutes.",
+          "required": false
+        },
+        "OCTOP_ADMIN_PASSWORD": {
+          "defaultValue": "Oc1-${{secret(32, \"abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789\")}}",
+          "description": "Admin password (min. 12 characters with letters and digits), generated at deploy. Change it here and redeploy to reset it; a password changed in the dashboard is kept until then.",
+          "required": false
+        },
+        "OCTOP_ADMIN_DISPLAY_NAME": {
+          "defaultValue": "Admin",
+          "description": "Display name of the first admin (first boot only).",
+          "required": false
+        },
+        "OCTOP_ADMIN_LOCALE": {
+          "defaultValue": "en",
+          "description": "Language of the first admin's dashboard and default experts: en or zh (first boot only; each user can change it later).",
+          "required": false
+        },
+        "OCTOP_DATABASE_URL": {
+          "defaultValue": "${{Postgres.DATABASE_URL}}",
+          "description": "PostgreSQL control-plane database (users, experts, channels, cron, settings, encrypted keys) and agent memory. Empty = SQLite on the volume.",
+          "required": false
+        },
+        "OCTOP_DEFAULT_TIMEZONE": {
+          "defaultValue": "UTC",
+          "description": "IANA timezone for dashboard times and cron schedules, e.g. Europe/Istanbul (upstream default is Asia/Shanghai).",
+          "required": false
+        },
+        "OCTOP_SECURITY_DEFAULTS": {
+          "defaultValue": "strict",
+          "description": "strict = on the first boot, store a policy with tool approval on and the shell guard set to require approval. upstream = keep upstream defaults (approval off, guard warns only).",
+          "required": false
+        },
+        "OCTOP_ENABLE_MOBILE": {
+          "defaultValue": "false",
+          "description": "Remote Android (redroid) needs Docker and kernel binder support, which Railway does not offer; kept off.",
+          "required": false
+        },
+        "OCTOP_LOG_TO_STDOUT": {
+          "defaultValue": "true",
+          "description": "true = forward Octop's application log (agents, channels, cron) from /data/.octop/logs to Railway's log view.",
+          "required": false
+        },
+        "OCTOP_LOG_LEVEL": {
+          "defaultValue": "info",
+          "description": "Octop log level: debug, info, warning or error.",
+          "required": false
+        },
+        "RAILWAY_DEPLOYMENT_DRAINING_SECONDS": {
+          "defaultValue": "30",
+          "description": "Seconds Octop gets to stop agents, channels and the database pool before a redeploy kills it.",
+          "required": false
+        }
+      }
+    },
+    "Postgres": {
+      "icon": "https://devicons.railway.app/i/postgresql.svg",
+      "source": {
+        "image": "ghcr.io/railwayapp-templates/postgres-ssl:18"
+      },
+      "startCommand": null,
+      "preDeployCommand": null,
+      "healthcheckPath": null,
+      "healthcheckTimeout": null,
+      "restartPolicyType": "ON_FAILURE",
+      "restartPolicyMaxRetries": 10,
+      "numReplicas": 1,
+      "cronSchedule": null,
+      "publicDomain": false,
+      "targetPort": null,
+      "tcpProxy": null,
+      "volume": {
+        "mountPath": "/var/lib/postgresql/data"
+      },
+      "variables": {
+        "PGDATA": {
+          "defaultValue": "/var/lib/postgresql/data/pgdata",
+          "description": "Location where the database will be initialized.",
+          "required": false
+        },
+        "PGHOST": {
+          "defaultValue": "${{RAILWAY_PRIVATE_DOMAIN}}",
+          "description": "Railway private domain name.",
+          "required": false
+        },
+        "PGPORT": {
+          "defaultValue": "5432",
+          "description": "Port to connect to Postgres.",
+          "required": false
+        },
+        "PGUSER": {
+          "defaultValue": "${{ POSTGRES_USER }}",
+          "description": "Required variable for the Data panel.",
+          "required": false
+        },
+        "PGDATABASE": {
+          "defaultValue": "${{POSTGRES_DB}}",
+          "description": "Required variable for the Data panel.",
+          "required": false
+        },
+        "PGPASSWORD": {
+          "defaultValue": "${{POSTGRES_PASSWORD}}",
+          "description": "Required variable for the Data panel.",
+          "required": false
+        },
+        "POSTGRES_DB": {
+          "defaultValue": "railway",
+          "description": "Default database created when the image is started.",
+          "required": false
+        },
+        "DATABASE_URL": {
+          "defaultValue": "postgresql://${{PGUSER}}:${{POSTGRES_PASSWORD}}@${{RAILWAY_PRIVATE_DOMAIN}}:5432/${{PGDATABASE}}",
+          "description": "URL to connect to the Postgres database over the private network.",
+          "required": false
+        },
+        "POSTGRES_USER": {
+          "defaultValue": "postgres",
+          "description": "User to connect to the Postgres DB.",
+          "required": false
+        },
+        "SSL_CERT_DAYS": {
+          "defaultValue": "820",
+          "description": "SSL certificate expiry in days.",
+          "required": false
+        },
+        "POSTGRES_PASSWORD": {
+          "defaultValue": "${{ secret(32, \"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ\") }}",
+          "description": "Password to connect to the DB (generated).",
+          "required": false
+        },
+        "RAILWAY_DEPLOYMENT_DRAINING_SECONDS": {
+          "defaultValue": "60",
+          "description": "Allow Postgres to shut down cleanly.",
+          "required": false
+        }
+      }
+    }
+  },
+  "buckets": []
+}
