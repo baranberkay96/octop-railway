@@ -1,5 +1,7 @@
 # Deploy and Host Octop with Railway
 
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/octop-v1-multi-user-ai-assistant?referralCode=20H68q)
+
 Run Octop, the open-source multi-user AI assistant from Tencent Cloud, for your team on Railway. Each person gets their own experts (agents) with tools, memory, knowledge bases and schedules, reachable from a web dashboard and from Feishu, DingTalk, WeCom, QQ, WeChat, Telegram or Discord.
 
 ## About Hosting Octop
